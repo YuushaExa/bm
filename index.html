@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Sidebars Layout</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            flex: 1;
+            padding: 15px;
+        }
+        .left-sidebar {
+            order: 1; /* Left sidebar on the left */
+        }
+        .right-sidebar {
+            order: 3; /* Right sidebar on the right */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar left-sidebar">
+        <h2>Left Sidebar</h2>
+        <p>This is the left sidebar content.</p>
+    </div>
+
+    <div class="main-content">
+        <h1>Main Content Area</h1>
+        <p>This is the main content area where you can add your main information.</p>
+    </div>
+
+    <div class="sidebar right-sidebar">
+        <h2>Right Sidebar</h2>
+        <p>This is the right sidebar content.</p>
+    </div>
+
+</body>
+</html>
