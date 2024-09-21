@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookMarks</title>
+    <title>Two Sidebars Layout with Link Storage</title>
     <style>
         body {
             display: flex;
@@ -26,6 +26,9 @@
         .right-sidebar {
             order: 3; /* Right sidebar on the right */
         }
+        .link-input {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -37,7 +40,10 @@
 
     <div class="main-content">
         <h1>Main Content Area</h1>
-        <p>This is the main content area where you can add your main information.</p>
+        <input type="text" id="linkInput" class="link-input" placeholder="Enter a link" />
+        <button id="saveButton">Save Link</button>
+        <h2>Saved Links</h2>
+        <ul id="linkList"></ul>
     </div>
 
     <div class="sidebar right-sidebar">
@@ -45,7 +51,7 @@
         <p>This is the right sidebar content.</p>
     </div>
 
+    <!-- Link to the external JavaScript file -->
+    <script src="script.js"></script>
 </body>
-        <script src="script.js"></script>
-
 </html>
