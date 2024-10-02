@@ -14,68 +14,67 @@ document.addEventListener('DOMContentLoaded', function() {
         displayLinks(links);
     }
 
-  // Update the link display logic
-function displayLinks(linksToDisplay) {
-    linkList.innerHTML = '';
-    linksToDisplay.forEach(link => {
-        const [title, url, image, description] = link.split('|'); // Split title, URL, image, description
-        const li = document.createElement('li');
+    // Display links properly (handles title, url, image, description)
+    function displayLinks(linksToDisplay) {
+        linkList.innerHTML = '';
+        linksToDisplay.forEach(link => {
+            const [title, url, image, description] = link.split('|');
+            const li = document.createElement('li');
 
-        // Create anchor tag for the URL
-        const a = document.createElement('a');
-        a.href = url;
-        a.textContent = title;
-        a.target = '_blank'; // Open in a new tab
+            const a = document.createElement('a');
+            a.href = url;
+            a.textContent = title;
+            a.target = '_blank';
 
-        // Create a div for description and image if available
-        const div = document.createElement('div');
+            const div = document.createElement('div');
 
-        if (image) {
-            const img = document.createElement('img');
-            img.src = image;
-            img.style.width = '100px'; // Set image width, adjust as needed
-            div.appendChild(img);
-        }
+            if (image) {
+                const img = document.createElement('img');
+                img.src = image;
+                img.style.width = '100px';
+                div.appendChild(img);
+            }
 
-        if (description) {
-            const p = document.createElement('p');
-            p.textContent = description;
-            div.appendChild(p);
-        }
+            if (description) {
+                const p = document.createElement('p');
+                p.textContent = description;
+                div.appendChild(p);
+            }
 
-        li.appendChild(a);
-        li.appendChild(div);
-        linkList.appendChild(li);
-    });
-}
-
-// Update the checkForSavedHTML function to capture all fields
-function checkForSavedHTML() {
-    const params = getQueryParams();
-    if (params.title && params.url) {
-        const title = params.title;
-        const url = params.url;
-        const image = params.image || ''; // Handle missing image
-        const description = params.description || ''; // Handle missing description
-
-        const newLink = `${title}|${url}|${image}|${description}`;
-        let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
-        savedLinks.push(newLink);
-        localStorage.setItem('links', JSON.stringify(savedLinks));
-
-        alert('Bookmark saved!');
-        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+            li.appendChild(a);
+            li.appendChild(div);
+            linkList.appendChild(li);
+        });
     }
-}
 
+    // Check for saved bookmark from URL parameters and save to local storage
+    function checkForSavedHTML() {
+        const params = getQueryParams();
+        if (params.title && params.url) {
+            const title = params.title;
+            const url = params.url;
+            const image = params.image || '';
+            const description = params.description || '';
 
-    // Save link to local storage
+            const newLink = `${title}|${url}|${image}|${description}`;
+            let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            savedLinks.push(newLink);
+            localStorage.setItem('links', JSON.stringify(savedLinks));
+
+            alert('Bookmark saved!');
+            window.history.replaceState({}, document.title, "/bm/");
+            loadLinks(); // Update the displayed links
+        }
+    }
+
+    // Save link manually from input field
     saveButton.addEventListener('click', function() {
         const link = linkInput.value.trim();
         if (link) {
-            links.push(link);
+            const newLink = `${link}|${link}| | `;  // Title and URL same, no image/description
+            links.push(newLink);
             localStorage.setItem('links', JSON.stringify(links));
-            linkInput.value = ''; // Clear the input field
+            linkInput.value = ''; // Clear input field
             displayLinks(links); // Refresh the displayed links
         } else {
             alert('Please enter a valid link.');
@@ -87,45 +86,33 @@ function checkForSavedHTML() {
         displayLinks(links);
     });
 
-    // Show just bookmarks (you can define what "just bookmarks" means)
+    // Filter and show just bookmarks (no 'advanced' keyword)
     justBookmarksButton.addEventListener('click', function() {
-        const justBookmarks = links.filter(link => !link.includes('advanced')); // Example filter
+        const justBookmarks = links.filter(link => !link.toLowerCase().includes('advanced'));
         displayLinks(justBookmarks);
     });
 
-    // Show advanced bookmarks (you can define what "advanced bookmarks" means)
+    // Filter and show advanced bookmarks (contains 'advanced')
     advancedBookmarksButton.addEventListener('click', function() {
-        const advancedBookmarks = links.filter(link => link.includes('advanced')); // Example filter
+        const advancedBookmarks = links.filter(link => link.toLowerCase().includes('advanced'));
         displayLinks(advancedBookmarks);
     });
 
+    // Helper function to get query parameters
+    function getQueryParams() {
+        const params = {};
+        const queryString = window.location.search.substring(1);
+        const regex = /([^&=]+)=([^&]*)/g;
+        let m;
+        while (m = regex.exec(queryString)) {
+            params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+        }
+        return params;
+    }
+
+    // Call checkForSavedHTML on page load to check for bookmark from query params
+    checkForSavedHTML();
+    
     // Load links on page load
     loadLinks();
 });
-
-// redirect
-
-// Function to get query parameters
-function getQueryParams() {
-    const params = {};
-    const queryString = window.location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m;
-    while (m = regex.exec(queryString)) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-    }
-    return params;
-}
-
-// Check for query parameters on page load
-// Function to get query parameters
-function getQueryParams() {
-    const params = {};
-    const queryString = window.location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m;
-    while (m = regex.exec(queryString)) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-    }
-    return params;
-}
