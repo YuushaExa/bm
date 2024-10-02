@@ -92,19 +92,29 @@ function getQueryParams() {
 }
 
 // Check for HTML content on page load
-function checkForSavedHTML() {
+// Function to get query parameters
+function getQueryParams() {
+    const params = {};
+    const queryString = window.location.search.substring(1);
+    const regex = /([^&=]+)=([^&]*)/g;
+    let m;
+    while (m = regex.exec(queryString)) {
+        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    }
+    return params;
+}
+
+// Check for query parameters on page load
+function checkForSavedData() {
     const params = getQueryParams();
-    if (params.html) {
-        const htmlContent = params.html;
-        let savedHTML = JSON.parse(localStorage.getItem('savedHTML')) || [];
-        savedHTML.push(htmlContent);
-        localStorage.setItem('savedHTML', JSON.stringify(savedHTML));
-        alert('HTML content saved!');
-        // Optionally, you can redirect to the main page after saving
-        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+    if (params.title && params.url) {
+        const savedLink = `${params.title}|${params.url}`;
+        let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
+        savedLinks.push(savedLink);
+        localStorage.setItem('links', JSON.stringify(savedLinks));
+        alert('Bookmark saved successfully!');
     }
 }
 
 // Call the function on page load
-checkForSavedHTML();
-
+checkForSavedData();
