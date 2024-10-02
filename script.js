@@ -79,32 +79,6 @@ function getQueryParams() {
 }
 
 // Check for query parameters on page load
-// Function to get query parameters
-function getQueryParams() {
-    const params = {};
-    const queryString = window.location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m;
-    while (m = regex.exec(queryString)) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-    }
-    return params;
-}
-
-// Check for HTML content on page load
-// Function to get query parameters
-function getQueryParams() {
-    const params = {};
-    const queryString = window.location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m;
-    while (m = regex.exec(queryString)) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-    }
-    return params;
-}
-
-// Check for query parameters on page load
 function checkForSavedData() {
     const params = getQueryParams();
     if (params.title && params.url) {
