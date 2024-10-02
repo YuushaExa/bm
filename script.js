@@ -15,26 +15,48 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Display links based on the filter
-function displayLinks(linksToDisplay) {
-    linkList.innerHTML = '';
-    linksToDisplay.forEach(link => {
-        const [title, url] = link.split('|'); // Split the title and URL
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = url;
-        a.textContent = title;
-        a.target = '_blank'; // Open in a new tab
-        li.appendChild(a);
-        linkList.appendChild(li);
-    });
-}
+    function displayLinks(linksToDisplay) {
+        linkList.innerHTML = '';
+        linksToDisplay.forEach(link => {
+            const [title, url, image, description] = link.split('|'); // Split the title, URL, image, and description
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = url;
+            a.textContent = title;
+            a.target = '_blank'; // Open in a new tab
+            li.appendChild(a);
 
+            // Add click event to display details
+            li.addEventListener('click', function() {
+                displayBookmarkDetails(title, image, description);
+            });
+
+            linkList.appendChild(li);
+        });
+    }
+
+    // Display bookmark details
+    function displayBookmarkDetails(title, image, description) {
+        const bookmarkImage = document.getElementById('bookmarkImage');
+        const bookmarkDescription = document.getElementById('bookmarkDescription');
+
+        // Set the image source and description text
+        bookmarkImage.src = image;
+        bookmarkImage.style.display = image ? 'block' : 'none'; // Show the image if available
+        bookmarkDescription.textContent = description || 'No description available.';
+    }
 
     // Save link to local storage
     saveButton.addEventListener('click', function() {
         const link = linkInput.value.trim();
         if (link) {
-            links.push(link);
+            // Here you would typically fetch the og:title, og:image, and og:description
+            // For demonstration, we'll use placeholder values
+            const title = "Sample Title"; // Replace with actual title
+            const image = "https://via.placeholder.com/150"; // Replace with actual image URL
+            const description = "Sample description for the bookmark."; // Replace with actual description
+
+            links.push(`${title}|${link}|${image}|${description}`);
             localStorage.setItem('links', JSON.stringify(links));
             linkInput.value = ''; // Clear the input field
             displayLinks(links); // Refresh the displayed links
@@ -63,32 +85,3 @@ function displayLinks(linksToDisplay) {
     // Load links on page load
     loadLinks();
 });
-
-// redirect
-
-// Function to get query parameters
-function getQueryParams() {
-    const params = {};
-    const queryString = window.location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m;
-    while (m = regex.exec(queryString)) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-    }
-    return params;
-}
-
-// Check for query parameters on page load
-function checkForSavedData() {
-    const params = getQueryParams();
-    if (params.title && params.url) {
-        const savedLink = `${params.title}|${params.url}`;
-        let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
-        savedLinks.push(savedLink);
-        localStorage.setItem('links', JSON.stringify(savedLinks));
-        alert('Bookmark saved successfully!');
-    }
-}
-
-// Call the function on page load
-checkForSavedData();
