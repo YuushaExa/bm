@@ -8,32 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let links = [];
 
-    // Function to get query parameters
-    function getQueryParams() {
-        const params = {};
-        const queryString = window.location.search.substring(1);
-        const regex = /([^&=]+)=([^&]*)/g;
-        let m;
-        while (m = regex.exec(queryString)) {
-            params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-        }
-        return params;
-    }
-
-    // Check for HTML content on page load
-    function checkForSavedHTML() {
-        const params = getQueryParams();
-        if (params.html) {
-            const htmlContent = params.html;
-            let savedHTML = JSON.parse(localStorage.getItem('savedHTML')) || [];
-            savedHTML.push(htmlContent);
-            localStorage.setItem('savedHTML', JSON.stringify(savedHTML));
-            alert('HTML content saved!');
-            // Optionally, you can redirect to the main page after saving
-            window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
-        }
-    }
-
     // Load saved links from local storage
     function loadLinks() {
         links = JSON.parse(localStorage.getItem('links')) || [];
@@ -41,48 +15,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Display links based on the filter
-    function displayLinks(linksToDisplay) {
-        linkList.innerHTML = '';
-        linksToDisplay.forEach(link => {
-            const [title, url, image, description] = link.split('|'); // Split the title, URL, image, and description
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = url;
-            a.textContent = title;
-            a.target = '_blank'; // Open in a new tab
-            li.appendChild(a);
+function displayLinks(linksToDisplay) {
+    linkList.innerHTML = '';
+    linksToDisplay.forEach(link => {
+        const [title, url] = link.split('|'); // Split the title and URL
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = url;
+        a.textContent = title;
+        a.target = '_blank'; // Open in a new tab
+        li.appendChild(a);
+        linkList.appendChild(li);
+    });
+}
 
-            // Add click event to display details
-            li.addEventListener('click', function() {
-                displayBookmarkDetails(title, image, description);
-            });
-
-            linkList.appendChild(li);
-        });
-    }
-
-    // Display bookmark details
-    function displayBookmarkDetails(title, image, description) {
-        const bookmarkImage = document.getElementById('bookmarkImage');
-        const bookmarkDescription = document.getElementById('bookmarkDescription');
-
-        // Set the image source and description text
-        bookmarkImage.src = image;
-        bookmarkImage.style.display = image ? 'block' : 'none'; // Show the image if available
-        bookmarkDescription.textContent = description || 'No description available.';
-    }
 
     // Save link to local storage
     saveButton.addEventListener('click', function() {
         const link = linkInput.value.trim();
         if (link) {
-            // Here you would typically fetch the og:title, og:image, and og:description
-            // For demonstration, we'll use placeholder values
-            const title = "Sample Title"; // Replace with actual title
-            const image = "https://via.placeholder.com/150"; // Replace with actual image URL
-            const description = "Sample description for the bookmark."; // Replace with actual description
-
-            links.push(`${title}|${link}|${image}|${description}`);
+            links.push(link);
             localStorage.setItem('links', JSON.stringify(links));
             linkInput.value = ''; // Clear the input field
             displayLinks(links); // Refresh the displayed links
@@ -108,7 +60,50 @@ document.addEventListener('DOMContentLoaded', function() {
         displayLinks(advancedBookmarks);
     });
 
-    // Load links and check for saved HTML on page load
+    // Load links on page load
     loadLinks();
-    checkForSavedHTML();
 });
+
+// redirect
+
+// Function to get query parameters
+function getQueryParams() {
+    const params = {};
+    const queryString = window.location.search.substring(1);
+    const regex = /([^&=]+)=([^&]*)/g;
+    let m;
+    while (m = regex.exec(queryString)) {
+        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    }
+    return params;
+}
+
+// Check for query parameters on page load
+// Function to get query parameters
+function getQueryParams() {
+    const params = {};
+    const queryString = window.location.search.substring(1);
+    const regex = /([^&=]+)=([^&]*)/g;
+    let m;
+    while (m = regex.exec(queryString)) {
+        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    }
+    return params;
+}
+
+// Check for HTML content on page load
+function checkForSavedHTML() {
+    const params = getQueryParams();
+    if (params.html) {
+        const htmlContent = params.html;
+        let savedHTML = JSON.parse(localStorage.getItem('savedHTML')) || [];
+        savedHTML.push(htmlContent);
+        localStorage.setItem('savedHTML', JSON.stringify(savedHTML));
+        alert('HTML content saved!');
+        // Optionally, you can redirect to the main page after saving
+        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+    }
+}
+
+// Call the function on page load
+checkForSavedHTML();
