@@ -2,11 +2,65 @@ document.addEventListener('DOMContentLoaded', function() {
     const linkInput = document.getElementById('linkInput');
     const saveButton = document.getElementById('saveButton');
     const linkList = document.getElementById('linkList');
-    const showAllButton = document.getElementById('showAllButton');
-    const justBookmarksButton = document.getElementById('justBookmarksButton');
-    const advancedBookmarksButton = document.getElementById('advancedBookmarksButton');
-
     let links = [];
+
+    // Create a modal for the confirmation window
+    const modal = document.createElement('div');
+    modal.style.display = 'none'; // Initially hidden
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.backgroundColor = '#fff';
+    modal.style.padding = '20px';
+    modal.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+    modal.style.zIndex = '1000';
+    document.body.appendChild(modal);
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.placeholder = 'Title';
+    modal.appendChild(titleInput);
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.placeholder = 'URL';
+    modal.appendChild(urlInput);
+
+    const imageInput = document.createElement('input');
+    imageInput.type = 'text';
+    imageInput.placeholder = 'Image URL';
+    modal.appendChild(imageInput);
+
+    const descriptionInput = document.createElement('textarea');
+    descriptionInput.placeholder = 'Description';
+    modal.appendChild(descriptionInput);
+
+    const confirmButton = document.createElement('button');
+    confirmButton.textContent = 'Save Bookmark';
+    modal.appendChild(confirmButton);
+
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    modal.appendChild(cancelButton);
+
+    // Close modal function
+    function closeModal() {
+        modal.style.display = 'none';
+        titleInput.value = '';
+        urlInput.value = '';
+        imageInput.value = '';
+        descriptionInput.value = '';
+    }
+
+    // Open modal function
+    function openModal(bookmark) {
+        titleInput.value = bookmark.title || '';
+        urlInput.value = bookmark.url || '';
+        imageInput.value = bookmark.image || '';
+        descriptionInput.value = bookmark.description || '';
+        modal.style.display = 'block';
+    }
 
     // Load saved links from local storage
     function loadLinks() {
@@ -14,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         displayLinks(links);
     }
 
-    // Display links properly (handles title, url, image, description)
+    // Display links
     function displayLinks(linksToDisplay) {
         linkList.innerHTML = '';
         linksToDisplay.forEach(link => {
@@ -23,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const a = document.createElement('a');
             a.href = url;
-            a.textContent = title;
+            a.textContent = title || 'Untitled';
             a.target = '_blank';
 
             const div = document.createElement('div');
@@ -47,58 +101,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Check for saved bookmark from URL parameters and save to local storage
-    function checkForSavedHTML() {
-        const params = getQueryParams();
-        if (params.title && params.url) {
-            const title = params.title;
-            const url = params.url;
-            const image = params.image || '';
-            const description = params.description || '';
-
-            const newLink = `${title}|${url}|${image}|${description}`;
-            let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
-            savedLinks.push(newLink);
-            localStorage.setItem('links', JSON.stringify(savedLinks));
-
-            alert('Bookmark saved!');
-            window.history.replaceState({}, document.title, "/bm/");
-            loadLinks(); // Update the displayed links
-        }
+    // Save or edit a link and update localStorage
+    function saveLink(bookmark) {
+        const newLink = `${bookmark.title}|${bookmark.url}|${bookmark.image}|${bookmark.description}`;
+        links.push(newLink);
+        localStorage.setItem('links', JSON.stringify(links));
+        loadLinks(); // Refresh links display
     }
 
     // Save link manually from input field
     saveButton.addEventListener('click', function() {
         const link = linkInput.value.trim();
         if (link) {
-            const newLink = `${link}|${link}| | `;  // Title and URL same, no image/description
-            links.push(newLink);
-            localStorage.setItem('links', JSON.stringify(links));
-            linkInput.value = ''; // Clear input field
-            displayLinks(links); // Refresh the displayed links
+            openModal({ title: link, url: link, image: '', description: '' }); // Open modal to edit the manually entered link
         } else {
             alert('Please enter a valid link.');
         }
     });
 
-    // Show all bookmarks
-    showAllButton.addEventListener('click', function() {
-        displayLinks(links);
-    });
+    // Check for saved bookmark from URL parameters and allow the user to edit and confirm it
+    function checkForSavedHTML() {
+        const params = getQueryParams();
+        if (params.title && params.url) {
+            const bookmark = {
+                title: params.title,
+                url: params.url,
+                image: params.image || '',
+                description: params.description || ''
+            };
+            openModal(bookmark); // Open modal for confirmation
+        }
+    }
 
-    // Filter and show just bookmarks (no 'advanced' keyword)
-    justBookmarksButton.addEventListener('click', function() {
-        const justBookmarks = links.filter(link => !link.toLowerCase().includes('advanced'));
-        displayLinks(justBookmarks);
-    });
-
-    // Filter and show advanced bookmarks (contains 'advanced')
-    advancedBookmarksButton.addEventListener('click', function() {
-        const advancedBookmarks = links.filter(link => link.toLowerCase().includes('advanced'));
-        displayLinks(advancedBookmarks);
-    });
-
-    // Helper function to get query parameters
+    // Get query parameters from URL
     function getQueryParams() {
         const params = {};
         const queryString = window.location.search.substring(1);
@@ -110,9 +145,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return params;
     }
 
+    // Modal save button logic
+    confirmButton.addEventListener('click', function() {
+        const bookmark = {
+            title: titleInput.value.trim(),
+            url: urlInput.value.trim(),
+            image: imageInput.value.trim(),
+            description: descriptionInput.value.trim()
+        };
+
+        if (bookmark.url) {
+            saveLink(bookmark); // Save the link to localStorage
+            closeModal(); // Close the modal
+        } else {
+            alert('URL is required.');
+        }
+    });
+
+    // Modal cancel button logic
+    cancelButton.addEventListener('click', function() {
+        closeModal(); // Close the modal without saving
+    });
+
     // Call checkForSavedHTML on page load to check for bookmark from query params
     checkForSavedHTML();
-    
+
     // Load links on page load
     loadLinks();
 });
