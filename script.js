@@ -14,19 +14,58 @@ document.addEventListener('DOMContentLoaded', function() {
         displayLinks(links);
     }
 
-    // Display links based on the filter
+  // Update the link display logic
 function displayLinks(linksToDisplay) {
     linkList.innerHTML = '';
     linksToDisplay.forEach(link => {
-        const [title, url] = link.split('|'); // Split the title and URL
+        const [title, url, image, description] = link.split('|'); // Split title, URL, image, description
         const li = document.createElement('li');
+
+        // Create anchor tag for the URL
         const a = document.createElement('a');
         a.href = url;
         a.textContent = title;
         a.target = '_blank'; // Open in a new tab
+
+        // Create a div for description and image if available
+        const div = document.createElement('div');
+
+        if (image) {
+            const img = document.createElement('img');
+            img.src = image;
+            img.style.width = '100px'; // Set image width, adjust as needed
+            div.appendChild(img);
+        }
+
+        if (description) {
+            const p = document.createElement('p');
+            p.textContent = description;
+            div.appendChild(p);
+        }
+
         li.appendChild(a);
+        li.appendChild(div);
         linkList.appendChild(li);
     });
+}
+
+// Update the checkForSavedHTML function to capture all fields
+function checkForSavedHTML() {
+    const params = getQueryParams();
+    if (params.title && params.url) {
+        const title = params.title;
+        const url = params.url;
+        const image = params.image || ''; // Handle missing image
+        const description = params.description || ''; // Handle missing description
+
+        const newLink = `${title}|${url}|${image}|${description}`;
+        let savedLinks = JSON.parse(localStorage.getItem('links')) || [];
+        savedLinks.push(newLink);
+        localStorage.setItem('links', JSON.stringify(savedLinks));
+
+        alert('Bookmark saved!');
+        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+    }
 }
 
 
@@ -90,20 +129,3 @@ function getQueryParams() {
     }
     return params;
 }
-
-// Check for HTML content on page load
-function checkForSavedHTML() {
-    const params = getQueryParams();
-    if (params.html) {
-        const htmlContent = params.html;
-        let savedHTML = JSON.parse(localStorage.getItem('savedHTML')) || [];
-        savedHTML.push(htmlContent);
-        localStorage.setItem('savedHTML', JSON.stringify(savedHTML));
-        alert('HTML content saved!');
-        // Optionally, you can redirect to the main page after saving
-        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
-    }
-}
-
-// Call the function on page load
-checkForSavedHTML();
