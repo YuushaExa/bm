@@ -15,14 +15,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Display links based on the filter
-    function displayLinks(linksToDisplay) {
-        linkList.innerHTML = '';
-        linksToDisplay.forEach(link => {
-            const li = document.createElement('li');
-            li.textContent = link;
-            linkList.appendChild(li);
-        });
-    }
+function displayLinks(linksToDisplay) {
+    linkList.innerHTML = '';
+    linksToDisplay.forEach(link => {
+        const [title, url] = link.split('|'); // Split the title and URL
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = url;
+        a.textContent = title;
+        a.target = '_blank'; // Open in a new tab
+        li.appendChild(a);
+        linkList.appendChild(li);
+    });
+}
+
 
     // Save link to local storage
     saveButton.addEventListener('click', function() {
@@ -57,3 +63,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load links on page load
     loadLinks();
 });
+
+// redirect
+
+// Function to get query parameters
+function getQueryParams() {
+    const params = {};
+    const queryString = window.location.search.substring(1);
+    const regex = /([^&=]+)=([^&]*)/g;
+    let m;
+    while (m = regex.exec(queryString)) {
+        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    }
+    return params;
+}
+
+// Check for query parameters on page load
+function checkForSavedLink() {
+    const params = getQueryParams();
+    if (params.title && params.url) {
+        const link = `${params.title}|${params.url}`;
+        let links = JSON.parse(localStorage.getItem('links')) || [];
+        links.push(link);
+        localStorage.setItem('links', JSON.stringify(links));
+        alert('Bookmark saved: ' + params.title);
+        // Optionally, you can redirect to the main page after saving
+        window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+    }
+}
+
+// Call the function on page load
+checkForSavedLink();
+
