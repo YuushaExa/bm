@@ -8,6 +8,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let links = [];
 
+    // Function to get query parameters
+    function getQueryParams() {
+        const params = {};
+        const queryString = window.location.search.substring(1);
+        const regex = /([^&=]+)=([^&]*)/g;
+        let m;
+        while (m = regex.exec(queryString)) {
+            params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+        }
+        return params;
+    }
+
+    // Check for HTML content on page load
+    function checkForSavedHTML() {
+        const params = getQueryParams();
+        if (params.html) {
+            const htmlContent = params.html;
+            let savedHTML = JSON.parse(localStorage.getItem('savedHTML')) || [];
+            savedHTML.push(htmlContent);
+            localStorage.setItem('savedHTML', JSON.stringify(savedHTML));
+            alert('HTML content saved!');
+            // Optionally, you can redirect to the main page after saving
+            window.history.replaceState({}, document.title, "/bm/"); // Adjust the path as needed
+        }
+    }
+
     // Load saved links from local storage
     function loadLinks() {
         links = JSON.parse(localStorage.getItem('links')) || [];
@@ -82,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         displayLinks(advancedBookmarks);
     });
 
-    // Load links on page load
+    // Load links and check for saved HTML on page load
     loadLinks();
+    checkForSavedHTML();
 });
