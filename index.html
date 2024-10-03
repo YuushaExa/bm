@@ -64,7 +64,14 @@
         <h2>Right Sidebar</h2>
         <p>This is the right sidebar content.</p>
     </div>
-
+    <script>
+        window.addEventListener('message', function(event) {
+            // Accept messages from any origin (not recommended for production)
+            const data = event.data;
+            localStorage.setItem('bookmark', JSON.stringify(data));
+            console.log('Bookmark data saved:', data);
+        });
+    </script>
     <!-- Link to the external JavaScript file -->
     <script src="script.js"></script>
 </body>
