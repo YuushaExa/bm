@@ -36,13 +36,13 @@ document.addEventListener('DOMContentLoaded', function() {
     descriptionInput.placeholder = 'Description';
     modal.appendChild(descriptionInput);
 
-    const confirmButton = document.createElement('button');
-    confirmButton.textContent = 'Save Bookmark';
-    modal.appendChild(confirmButton);
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete Bookmark';
+    modal.appendChild(deleteButton);
 
-    const cancelButton = document.createElement('button');
-    cancelButton.textContent = 'Cancel';
-    modal.appendChild(cancelButton);
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    modal.appendChild(closeButton);
 
     // Close modal function
     function closeModal() {
@@ -54,12 +54,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Open modal function
-    function openModal(bookmark) {
+    function openModal(bookmark, linkIndex = null) {
         titleInput.value = bookmark.title || '';
         urlInput.value = bookmark.url || '';
         imageInput.value = bookmark.image || '';
         descriptionInput.value = bookmark.description || '';
         modal.style.display = 'block';
+
+        // Save the bookmark to localStorage immediately
+        if (linkIndex === null) {
+            const newLink = `${bookmark.title}|${bookmark.url}|${bookmark.image}|${bookmark.description}`;
+            links.push(newLink);
+            localStorage.setItem('links', JSON.stringify(links));
+            loadLinks(); // Refresh links display
+        } else {
+            // Update an existing link when edited
+            links[linkIndex] = `${bookmark.title}|${bookmark.url}|${bookmark.image}|${bookmark.description}`;
+            localStorage.setItem('links', JSON.stringify(links));
+        }
+
+        // Delete logic: removes the bookmark
+        deleteButton.onclick = function() {
+            if (linkIndex !== null) {
+                links.splice(linkIndex, 1); // Remove link by index
+                localStorage.setItem('links', JSON.stringify(links)); // Save updated list
+                loadLinks(); // Refresh display
+            }
+            closeModal(); // Close modal
+        };
     }
 
     // Load saved links from local storage
@@ -71,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Display links
     function displayLinks(linksToDisplay) {
         linkList.innerHTML = '';
-        linksToDisplay.forEach(link => {
+        linksToDisplay.forEach((link, index) => {
             const [title, url, image, description] = link.split('|');
             const li = document.createElement('li');
 
@@ -95,31 +117,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 div.appendChild(p);
             }
 
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.onclick = function() {
+                const bookmark = { title, url, image, description };
+                openModal(bookmark, index); // Open modal with edit functionality
+            };
+
             li.appendChild(a);
             li.appendChild(div);
+            li.appendChild(editButton);
             linkList.appendChild(li);
         });
-    }
-
-    // Save or edit a link and update localStorage
-    function saveLink(bookmark) {
-        const newLink = `${bookmark.title}|${bookmark.url}|${bookmark.image}|${bookmark.description}`;
-        links.push(newLink);
-        localStorage.setItem('links', JSON.stringify(links));
-        loadLinks(); // Refresh links display
     }
 
     // Save link manually from input field
     saveButton.addEventListener('click', function() {
         const link = linkInput.value.trim();
         if (link) {
-            openModal({ title: link, url: link, image: '', description: '' }); // Open modal to edit the manually entered link
+            const newBookmark = { title: link, url: link, image: '', description: '' };
+            openModal(newBookmark); // Open modal to view and edit bookmark
+            linkInput.value = ''; // Clear the input field
         } else {
             alert('Please enter a valid link.');
         }
     });
 
-    // Check for saved bookmark from URL parameters and allow the user to edit and confirm it
+    // Check for saved bookmark from URL parameters and allow the user to edit it
     function checkForSavedHTML() {
         const params = getQueryParams();
         if (params.title && params.url) {
@@ -129,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 image: params.image || '',
                 description: params.description || ''
             };
-            openModal(bookmark); // Open modal for confirmation
+            openModal(bookmark); // Open modal for editing
         }
     }
 
@@ -145,25 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return params;
     }
 
-    // Modal save button logic
-    confirmButton.addEventListener('click', function() {
-        const bookmark = {
-            title: titleInput.value.trim(),
-            url: urlInput.value.trim(),
-            image: imageInput.value.trim(),
-            description: descriptionInput.value.trim()
-        };
-
-        if (bookmark.url) {
-            saveLink(bookmark); // Save the link to localStorage
-            closeModal(); // Close the modal
-        } else {
-            alert('URL is required.');
-        }
-    });
-
-    // Modal cancel button logic
-    cancelButton.addEventListener('click', function() {
+    // Modal close button logic
+    closeButton.addEventListener('click', function() {
         closeModal(); // Close the modal without saving
     });
 
