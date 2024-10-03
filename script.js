@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     const linkInput = document.getElementById('linkInput');
-    const saveButton = document.getElementById('saveButton');
     const linkList = document.getElementById('linkList');
     let links = [];
 
@@ -175,19 +174,21 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModal(); // Close the modal
     });
 
-    // Save a new link manually via input field
-    saveButton.addEventListener('click', function() {
-        const link = linkInput.value.trim();
-        if (link) {
-            const newBookmark = { title: link, url: link, image: '', description: '' };
-            openModal(newBookmark); // Open modal for the new bookmark
-            linkInput.value = ''; // Clear the input field
-        } else {
-            alert('Please enter a valid link.');
-        }
-    });
+    // Automatically save bookmark and open edit modal
+    function autoSaveAndEdit(bookmark) {
+        links.push(`${bookmark.title}|${bookmark.url}|${bookmark.image}|${bookmark.description}`);
+        localStorage.setItem('links', JSON.stringify(links)); // Save to localStorage
+        loadLinks(); // Refresh the displayed links
+        openModal(bookmark, links.length - 1); // Open edit modal for the last added bookmark
+    }
 
-    // Check for saved bookmark from URL parameters and open modal
+    // Automatically remove ?title= and other query params after bookmarklet save
+    function removeQueryParams() {
+        const urlWithoutParams = window.location.href.split('?')[0];
+        window.history.replaceState({}, document.title, urlWithoutParams); // Replace the URL without parameters
+    }
+
+    // Check for saved bookmark from URL parameters and auto-save it
     function checkForSavedHTML() {
         const params = getQueryParams();
         if (params.title && params.url) {
@@ -197,7 +198,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 image: params.image || '',
                 description: params.description || ''
             };
-            openModal(bookmark); // Open modal to view and edit bookmark
+            autoSaveAndEdit(bookmark); // Auto-save and open modal to edit the bookmark
+            removeQueryParams(); // Remove ?title= after saving
         }
     }
 
