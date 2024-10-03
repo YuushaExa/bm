@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
     closeButton.textContent = 'Close';
     modal.appendChild(closeButton);
 
+    const saveChangesButton = document.createElement('button');
+    saveChangesButton.textContent = 'Save Changes';
+    modal.appendChild(saveChangesButton);
+
+    let editingIndex = null; // Track the index of the bookmark being edited
+
     // Function to close modal
     function closeModal() {
         modal.style.display = 'none';
@@ -58,10 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
         imagePreview.src = '';
         imagePreview.style.display = 'none';
         descriptionInput.value = '';
+        editingIndex = null; // Reset editing index
     }
 
-    // Open modal and auto-save the bookmark or update it
-    function openModal(bookmark, linkIndex = null) {
+    // Open modal for editing or adding a bookmark
+    function openModal(bookmark, index = null) {
         titleInput.value = bookmark.title || '';
         urlInput.value = bookmark.url || '';
         imageInput.value = bookmark.image || '';
@@ -76,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         modal.style.display = 'block';
+        editingIndex = index; // Track the index if we're editing
 
         // Event listener to update image preview if the image URL changes
         imageInput.addEventListener('input', function() {
@@ -87,29 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Auto-save the bookmark immediately when added
-        const updatedBookmark = {
-            title: titleInput.value.trim(),
-            url: urlInput.value.trim(),
-            image: imageInput.value.trim(),
-            description: descriptionInput.value.trim()
-        };
-
-        if (linkIndex === null) {
-            // New bookmark: auto-save it to localStorage
-            links.push(`${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`);
-        } else {
-            // Update existing bookmark
-            links[linkIndex] = `${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`;
-        }
-        localStorage.setItem('links', JSON.stringify(links)); // Save to localStorage
-        loadLinks(); // Refresh the displayed links
-        closeModal(); // Close the modal after saving
-
         // Delete logic: removes the bookmark
         deleteButton.onclick = function() {
-            if (linkIndex !== null) {
-                links.splice(linkIndex, 1); // Remove the link at the given index
+            if (editingIndex !== null) {
+                links.splice(editingIndex, 1); // Remove the link at the given index
                 localStorage.setItem('links', JSON.stringify(links)); // Save updated list to localStorage
                 loadLinks(); // Refresh the displayed links
             }
@@ -163,6 +152,28 @@ document.addEventListener('DOMContentLoaded', function() {
             linkList.appendChild(li);
         });
     }
+
+    // Save the bookmark or update it
+    saveChangesButton.addEventListener('click', function() {
+        const updatedBookmark = {
+            title: titleInput.value.trim(),
+            url: urlInput.value.trim(),
+            image: imageInput.value.trim(),
+            description: descriptionInput.value.trim()
+        };
+
+        if (editingIndex === null) {
+            // Add a new bookmark
+            links.push(`${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`);
+        } else {
+            // Update an existing bookmark
+            links[editingIndex] = `${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`;
+        }
+
+        localStorage.setItem('links', JSON.stringify(links)); // Save to localStorage
+        loadLinks(); // Refresh the displayed links
+        closeModal(); // Close the modal
+    });
 
     // Save a new link manually via input field
     saveButton.addEventListener('click', function() {
