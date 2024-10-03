@@ -41,10 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
     descriptionInput.placeholder = 'Description';
     modal.appendChild(descriptionInput);
 
-    const saveChangesButton = document.createElement('button');
-    saveChangesButton.textContent = 'Save Changes';
-    modal.appendChild(saveChangesButton);
-
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Delete Bookmark';
     modal.appendChild(deleteButton);
@@ -91,25 +87,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Save the bookmark or update if linkIndex is not null
-        saveChangesButton.onclick = function() {
-            const updatedBookmark = {
-                title: titleInput.value.trim(),
-                url: urlInput.value.trim(),
-                image: imageInput.value.trim(),
-                description: descriptionInput.value.trim()
-            };
-            if (linkIndex === null) {
-                // New bookmark
-                links.push(`${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`);
-            } else {
-                // Update existing bookmark
-                links[linkIndex] = `${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`;
-            }
-            localStorage.setItem('links', JSON.stringify(links)); // Save to localStorage
-            loadLinks(); // Refresh the displayed links
-            closeModal(); // Close the modal after saving
+        // Auto-save the bookmark immediately when added
+        const updatedBookmark = {
+            title: titleInput.value.trim(),
+            url: urlInput.value.trim(),
+            image: imageInput.value.trim(),
+            description: descriptionInput.value.trim()
         };
+
+        if (linkIndex === null) {
+            // New bookmark: auto-save it to localStorage
+            links.push(`${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`);
+        } else {
+            // Update existing bookmark
+            links[linkIndex] = `${updatedBookmark.title}|${updatedBookmark.url}|${updatedBookmark.image}|${updatedBookmark.description}`;
+        }
+        localStorage.setItem('links', JSON.stringify(links)); // Save to localStorage
+        loadLinks(); // Refresh the displayed links
+        closeModal(); // Close the modal after saving
 
         // Delete logic: removes the bookmark
         deleteButton.onclick = function() {
