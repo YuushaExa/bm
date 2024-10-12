@@ -66,15 +66,17 @@
 <div class="container">
     <h1>Bookmarks</h1>
     <div class="input-group">
-        <input type="text" id="linkInput" placeholder="Enter a link" />
+        <input type="text" id="titleInput" placeholder="Enter a title" aria-label="Bookmark Title" />
+        <input type="url" id="linkInput" placeholder="Enter a link" aria-label="Bookmark URL" />
         <button id="saveButton">Save Link</button>
     </div>
     <h2>Saved Links</h2>
-    <div id="linkList"></div>
+    <div id="linkList" role="list"></div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const titleInput = document.getElementById('titleInput');
         const linkInput = document.getElementById('linkInput');
         const linkList = document.getElementById('linkList');
         let links = JSON.parse(localStorage.getItem('links')) || [];
@@ -83,8 +85,8 @@
             linkList.innerHTML = links.map((link, index) => {
                 const [title, url, image, description] = link.split('|');
                 return `
-                    <div class="bookmark-item">
-                        <a href="${url}" target="_blank">${title || 'Untitled'}</a>
+                    <div class="bookmark-item" role="listitem">
+                        <a href="${url}" target="_blank" rel="noopener noreferrer">${title || 'Untitled'}</a>
                         ${image ? `<img src="${image}" alt="Bookmark Image">` : ''}
                         <p>${description || ''}</p>
                         <button class="edit-button" data-index="${index}">Edit</button>
@@ -94,12 +96,13 @@
         }
 
         document.getElementById('saveButton').addEventListener('click', function() {
-            const title = linkInput.value.trim();
-            const url = linkInput.value.trim(); // You can add separate inputs for title, URL, etc.
+            const title = titleInput.value.trim();
+            const url = linkInput.value.trim();
             if (title && url) {
                 links.push(`${title}|${url}||`); // Add image and description as empty for now
                 localStorage.setItem('links', JSON.stringify(links));
                 renderBookmarks();
+                titleInput.value = '';
                 linkInput.value = '';
             } else {
                 alert('Please enter a valid title and URL.');
