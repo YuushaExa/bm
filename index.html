@@ -6,73 +6,117 @@
     <title>Bookmarks</title>
     <style>
         body {
-            display: flex;
-            margin: 0;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
         }
-        .sidebar {
-            width: 200px;
-            background-color: #f4f4f4;
-            padding: 15px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        h1, h2 {
+            color: #333;
         }
-        .main-content {
-            flex: 1;
-            padding: 15px;
+        .input-group {
+            margin-bottom: 20px;
         }
-        .left-sidebar {
-            order: 1; /* Left sidebar on the left */
+        .input-group input {
+            padding: 10px;
+            width: calc(100% - 120px);
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-        .right-sidebar {
-            order: 3; /* Right sidebar on the right */
-        }
-        .link-input {
-            margin-bottom: 10px;
-        }
-        .button {
-            display: block;
-            margin: 5px 0;
+        .input-group button {
             padding: 10px;
             background-color: #007BFF;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
         }
-        .button:hover {
+        .input-group button:hover {
             background-color: #0056b3;
+        }
+        .bookmark-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .bookmark-item img {
+            width: 100px;
+            display: block;
+            margin-top: 10px;
+        }
+        .edit-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .edit-button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar left-sidebar">
-        <h2>Left Sidebar</h2>
-        <button class="button" id="showAllButton">Show All Bookmarks</button>
-        <button class="button" id="justBookmarksButton">Just Bookmarks</button>
-        <button class="button" id="advancedBookmarksButton">Advanced Bookmarks</button>
-    </div>
-
-    <div class="main-content">
-        <h1>Main Content Area</h1>
-        <input type="text" id="linkInput" class="link-input" placeholder="Enter a link" />
+<div class="container">
+    <h1>Bookmarks</h1>
+    <div class="input-group">
+        <input type="text" id="linkInput" placeholder="Enter a link" />
         <button id="saveButton">Save Link</button>
-        <h2>Saved Links</h2>
-        <ul id="linkList"></ul>
     </div>
+    <h2>Saved Links</h2>
+    <div id="linkList"></div>
+</div>
 
-    <div class="sidebar right-sidebar">
-        <h2>Right Sidebar</h2>
-        <p>This is the right sidebar content.</p>
-    </div>
-    <script>
-        window.addEventListener('message', function(event) {
-            // Accept messages from any origin (not recommended for production)
-            const data = event.data;
-            localStorage.setItem('bookmark', JSON.stringify(data));
-            console.log('Bookmark data saved:', data);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const linkInput = document.getElementById('linkInput');
+        const linkList = document.getElementById('linkList');
+        let links = JSON.parse(localStorage.getItem('links')) || [];
+
+        function renderBookmarks() {
+            linkList.innerHTML = links.map((link, index) => {
+                const [title, url, image, description] = link.split('|');
+                return `
+                    <div class="bookmark-item">
+                        <a href="${url}" target="_blank">${title || 'Untitled'}</a>
+                        ${image ? `<img src="${image}" alt="Bookmark Image">` : ''}
+                        <p>${description || ''}</p>
+                        <button class="edit-button" data-index="${index}">Edit</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('saveButton').addEventListener('click', function() {
+            const title = linkInput.value.trim();
+            const url = linkInput.value.trim(); // You can add separate inputs for title, URL, etc.
+            if (title && url) {
+                links.push(`${title}|${url}||`); // Add image and description as empty for now
+                localStorage.setItem('links', JSON.stringify(links));
+                renderBookmarks();
+                linkInput.value = '';
+            } else {
+                alert('Please enter a valid title and URL.');
+            }
         });
-    </script>
-    <!-- Link to the external JavaScript file -->
-    <script src="script.js"></script>
+
+        linkList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('edit-button')) {
+                const index = e.target.dataset.index;
+                // Implement edit functionality here
+                console.log('Edit bookmark at index:', index);
+                // You can open a modal or prompt to edit the bookmark
+            }
+        });
+
+        renderBookmarks();
+    });
+</script>
 </body>
 </html>
