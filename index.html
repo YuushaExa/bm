@@ -79,19 +79,20 @@
         const linkList = document.getElementById('linkList');
         let links = JSON.parse(localStorage.getItem('links')) || [];
 
-        function renderBookmarks() {
-            linkList.innerHTML = links.map((link, index) => {
-                const [title, url, image, description] = link.split('|');
-                return `
-                    <div class="bookmark-item">
-                        <a href="${url}" target="_blank">${title || 'Untitled'}</a>
-                        ${image ? `<img src="${image}" alt="Bookmark Image">` : ''}
-                        <p>${description || ''}</p>
-                        <button class="edit-button" data-index="${index}">Edit</button>
-                    </div>
-                `;
-            }).join('');
-        }
+function renderBookmarks() {
+    linkList.innerHTML = links.map((link, index) => {
+        const [title, url, image, description] = link.split('|');
+        const wrappedImage = image ? `https://wsrv.nl/?url=${encodeURIComponent(image)}&output=webp&maxage=1d&w=200&h=300&fit=cover&a=attention` : '';
+        return `
+            <div class="bookmark-item">
+                <a href="${url}" target="_blank">${title || 'Untitled'}</a>
+                ${wrappedImage ? `<img src="${wrappedImage}" alt="Bookmark Image">` : ''}
+                <p>${description || ''}</p>
+                <button class="edit-button" data-index="${index}">Edit</button>
+            </div>
+        `;
+    }).join('');
+}
 
         document.getElementById('saveButton').addEventListener('click', function() {
             const title = linkInput.value.trim();
